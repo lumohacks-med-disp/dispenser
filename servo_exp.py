@@ -32,38 +32,43 @@ class App:
             time.sleep(2)
     def mainLoop(self):
         while True:
-            result = self.firebaseApp.get('/patients/197214/alert', None)
-            input_state = GPIO.input(SWITCH_PIN)
+            try:
+                result = self.firebaseApp.get('/patients/197214/alert', None)
+                input_state = GPIO.input(SWITCH_PIN)
 
-            # button
-            if input_state == BUTTON_PRESSED:
-                print("Button: " + str(input_state))
-                self.dispenseDosage()
-
-            # if alert was true
-            elif bool(result) == True:
-                self.dispenseDosage()
-                self.firebaseApp.put('/patients/197214', "alert", False)
-                    # input_state = GPIO.input(SWITCH_PIN)
-
-                    # Turn Servo
-
-            # if alert was false
-            elif bool(result) == False:
-                nextDispenseTimeStamp = self.firebaseApp.get('/patients/197214/nextDispense', None)
-                dosesPerDay = self.firebaseApp.get('/patients/197214/dosesPerDay', None)
-                curTimestamp = time.time()
-                print(curTimestamp)
-                print(nextDispenseTimeStamp)
-                print(dosesPerDay)
-                if curTimestamp >= nextDispenseTimeStamp and dosesPerDay !=0 : # has scheduling
+                # button
+                if input_state == BUTTON_PRESSED:
+                    print("Button: " + str(input_state))
                     self.dispenseDosage()
-                    nextDispense = 24/dosesPerDay*60*60 + curTimestamp
-                    self.firebaseApp.put('/patients/197214','nextDispense', nextDispense  )
-                else: # no scheduling
-                    print('waiting')
 
-            time.sleep(5)
+                # if alert was true
+                elif bool(result) == True:
+                    self.dispenseDosage()
+                    self.firebaseApp.put('/patients/197214', "alert", False)
+                        # input_state = GPIO.input(SWITCH_PIN)
+
+                        # Turn Servo
+
+                # if alert was false
+                elif bool(result) == False:
+                    nextDispenseTimeStamp = self.firebaseApp.get('/patients/197214/nextDispense', None)
+                    dosesPerDay = self.firebaseApp.get('/patients/197214/dosesPerDay', None)
+                    curTimestamp = time.time()
+                    print(curTimestamp)
+                    print(nextDispenseTimeStamp)
+                    print(dosesPerDay)
+                    if curTimestamp >= nextDispenseTimeStamp and dosesPerDay !=0 : # has scheduling
+                        self.dispenseDosage()
+                        nextDispense = 24/dosesPerDay*60*60 + curTimestamp
+                        self.firebaseApp.put('/patients/197214','nextDispense', nextDispense  )
+                    else: # no scheduling
+                        print('waiting')
+
+                time.sleep(5)
+            except requests.exceptions.ConnectionError:
+                print('Disconnected...Retry in 5 seconds')
+                time.sleep(5)
+                continue
     def __init__(self):
         # GPIO Setup
         GPIO.setmode(GPIO.BCM)
