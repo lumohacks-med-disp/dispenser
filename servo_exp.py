@@ -33,31 +33,34 @@ class App:
     def mainLoop(self):
         while True:
             result = self.firebaseApp.get('/patients/197214/alert', None)
-            nextDispenseTimeStamp = self.firebaseApp.get('/patients/197214/nextDispense', None)
-
-            curTimestamp = time.time()
-            if curTimestamp >= nextDispenseTimeStamp:
-                self.dispenseDosage()
-                dosesPerDay = self.firebaseApp.get('/patients/197214/dosesPerDay', None)
-                nextDispense = 24/dosesPerDay*60*60 + curTimestamp
-                self.firebaseApp.put('/patients/197214','nextDispense', nextDispense  )
-
             input_state = GPIO.input(SWITCH_PIN)
-            if input_state == False:
-                print("58008: " + str(input_state))
+
+            # button
+            if input_state == BUTTON_PRESSED:
+                print("Button: " + str(input_state))
                 self.dispenseDosage()
-                BUTTON_PRESSED = False
 
-            elif bool(result) == False:
-                time.sleep(5)
-                print('waiting')
-
-            else:
+            # if alert was true
+            elif bool(result) == True:
                 self.dispenseDosage()
-                # input_state = GPIO.input(SWITCH_PIN)
-
-                # Turn Servo
                 self.firebaseApp.put('/patients/197214', "alert", False)
+                    # input_state = GPIO.input(SWITCH_PIN)
+
+                    # Turn Servo
+
+            # if alert was false
+            elif bool(result) == False:
+                nextDispenseTimeStamp = self.firebaseApp.get('/patients/197214/nextDispense', None)
+                curTimestamp = time.time()
+                if curTimestamp >= nextDispenseTimeStamp: # has scheduling
+                    self.dispenseDosage()
+                    dosesPerDay = self.firebaseApp.get('/patients/197214/dosesPerDay', None)
+                    nextDispense = 24/dosesPerDay*60*60 + curTimestamp
+                    self.firebaseApp.put('/patients/197214','nextDispense', nextDispense  )
+                else: # no scheduling
+                    print('waiting')
+
+            time.sleep(5)
     def __init__(self):
         # GPIO Setup
         GPIO.setmode(GPIO.BCM)
@@ -77,6 +80,6 @@ class App:
 try:
     App()
 except KeyboardInterrupt:
+    print('Program Interrupted')
+finally:
     GPIO.cleanup()
-
-GPIO.cleanup()
