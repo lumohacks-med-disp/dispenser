@@ -51,10 +51,13 @@ class App:
             # if alert was false
             elif bool(result) == False:
                 nextDispenseTimeStamp = self.firebaseApp.get('/patients/197214/nextDispense', None)
+                dosesPerDay = self.firebaseApp.get('/patients/197214/dosesPerDay', None)
                 curTimestamp = time.time()
-                if curTimestamp >= nextDispenseTimeStamp: # has scheduling
+                print(curTimestamp)
+                print(nextDispenseTimeStamp)
+                print(dosesPerDay)
+                if curTimestamp >= nextDispenseTimeStamp and dosesPerDay !=0 : # has scheduling
                     self.dispenseDosage()
-                    dosesPerDay = self.firebaseApp.get('/patients/197214/dosesPerDay', None)
                     nextDispense = 24/dosesPerDay*60*60 + curTimestamp
                     self.firebaseApp.put('/patients/197214','nextDispense', nextDispense  )
                 else: # no scheduling
