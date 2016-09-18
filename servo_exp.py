@@ -34,11 +34,11 @@ try:
 
 
     while True:
-        result = firebase.get('/patients/jeffrey_leung/alert', None)
+        result = firebase.get('/patients/197214/alert', None)
         input_state = GPIO.input(SWITCH_PIN)
         if input_state == False:
             print("58008: " + str(input_state))
-            nDosage = firebase.get('/patients/jeffrey_leung/dosage', None)
+            nDosage = firebase.get('/patients/197214/dosage', None)
             print("nDosage:" + str(nDosage))
             for val in range (0, nDosage):
                 GPIO.output(LIGHT_PIN, True)
@@ -58,7 +58,7 @@ try:
         
 
         else:
-            nDosage = firebase.get('/patients/jeffrey_leung/dosage', None)
+            nDosage = firebase.get('/patients/197214/dosage', None)
             print("nDosage:" + str(nDosage))
             for val in range (0, nDosage):
                 GPIO.output(LIGHT_PIN, True)
@@ -72,7 +72,7 @@ try:
             # input_state = GPIO.input(SWITCH_PIN)
 
             # Turn Servo
-            firebase.put('/patients/jeffrey_leung', "alert", False)
+            firebase.put('/patients/197214', "alert", False)
             
 except KeyboardInterrupt:
     GPIO.cleanup()
