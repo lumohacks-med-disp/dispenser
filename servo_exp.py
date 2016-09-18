@@ -31,27 +31,49 @@ firebase = firebase.FirebaseApplication('https://lumohacks-med-disp.firebaseio.c
 
 
 try:
+
+
     while True:
         result = firebase.get('/patients/jeffrey_leung/alert', None)
-        if bool(result) == False:
+        input_state = GPIO.input(SWITCH_PIN)
+        if input_state == False:
+            print("58008: " + str(input_state))
+            nDosage = firebase.get('/patients/jeffrey_leung/dosage', None)
+            print("nDosage:" + str(nDosage))
+            for val in range (0, nDosage):
+                GPIO.output(LIGHT_PIN, True)
+                servoPWM.ChangeDutyCycle(15)
+                # speakerPWM.ChangeDutyCycle(24)
+                time.sleep(2)
+                # speakerPWM.ChangeDutyCycle(0)
+                servoPWM.ChangeDutyCycle(3.5)
+                GPIO.output(LIGHT_PIN, False)
+                time.sleep(2) 
+                BUTTON_PRESSED = False
+
+        elif bool(result) == False: 
             time.sleep(5)
             print('waiting')
+
+        
+
         else:
-            firebase.put('/patients/jeffrey_leung', "alert", False)
             nDosage = firebase.get('/patients/jeffrey_leung/dosage', None)
-        # input_state = GPIO.input(SWITCH_PIN)
+            print("nDosage:" + str(nDosage))
+            for val in range (0, nDosage):
+                GPIO.output(LIGHT_PIN, True)
+                servoPWM.ChangeDutyCycle(12.5)
+                # speakerPWM.ChangeDutyCycle(24)
+                time.sleep(2)
+                # speakerPWM.ChangeDutyCycle(0)
+                servoPWM.ChangeDutyCycle(5)
+                GPIO.output(LIGHT_PIN, False)
+                time.sleep(2) 
+            # input_state = GPIO.input(SWITCH_PIN)
 
             # Turn Servo
-            GPIO.output(LIGHT_PIN, True)
-            servoPWM.ChangeDutyCycle(12.5)
-            # speakerPWM.ChangeDutyCycle(24)
-            time.sleep(2)
-
-
-            # speakerPWM.ChangeDutyCycle(0)
-            servoPWM.ChangeDutyCycle(5)
-            GPIO.output(LIGHT_PIN, False)
-            time.sleep(2)
+            firebase.put('/patients/jeffrey_leung', "alert", False)
+            
 except KeyboardInterrupt:
     GPIO.cleanup()
 
