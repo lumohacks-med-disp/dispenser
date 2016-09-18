@@ -17,28 +17,36 @@ GPIO.setup(SERVO_PIN, GPIO.OUT)
 GPIO.setup(SPEAKER_PIN, GPIO.OUT)
 GPIO.setup(LIGHT_PIN, GPIO.OUT)
 GPIO.setup(SWITCH_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-servoPWM = GPIO.PWM(SERVO_PIN, 50)
-speakerPWM = GPIO.PWM(SPEAKER_PIN, 100)
+servoPWM = GPIO.PWM(SERVO_PIN, 70)
+# speakerPWM = GPIO.PWM(SPEAKER_PIN, 100)
 
-servoPWM.start(7.5)
-speakerPWM.start(0)
+servoPWM.start(5)
+# speakerPWM.start(0)
 
 firebase = firebase.FirebaseApplication('https://lumohacks-med-disp.firebaseio.com', None)
-result = firebase.get('/patients/jeffrey_leung/alert', None)
-print(result)
+
 
 
 try:
     while True:
-        input_state = GPIO.input(SWITCH_PIN)
-        if input_state == BUTTON_PRESSED:
+        result = firebase.get('/patients/jeffrey_leung/alert', None)
+        if bool(result) == False:
+            time.sleep(5)
+            print('waiting')
+        else:
+            firebase.put('/patients/jeffrey_leung', "alert", False)
+            nDosage = firebase.get('/patients/jeffrey_leung/dosage', None)
+        # input_state = GPIO.input(SWITCH_PIN)
+
+            # Turn Servo
             GPIO.output(LIGHT_PIN, True)
-            servoPWM.ChangeDutyCycle(12)
-            speakerPWM.ChangeDutyCycle(24)
+            servoPWM.ChangeDutyCycle(12.5)
+            # speakerPWM.ChangeDutyCycle(24)
             time.sleep(2)
 
-            speakerPWM.ChangeDutyCycle(0)
-            servoPWM.ChangeDutyCycle(2.5)
+
+            # speakerPWM.ChangeDutyCycle(0)
+            servoPWM.ChangeDutyCycle(5)
             GPIO.output(LIGHT_PIN, False)
             time.sleep(2)
 except KeyboardInterrupt:
